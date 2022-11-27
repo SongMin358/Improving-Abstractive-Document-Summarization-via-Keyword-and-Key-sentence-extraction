@@ -40,16 +40,16 @@ class SummaryDataset(Dataset):
             label_text += summary
 
         elif self.task_type == KW:
-            input_text += f"{document}\nKey Words: {key_words}"
-            label_text += summary
+            input_text += document
+            label_text += f"Key Words: {key_words}\nSummary: {summary}"
         
         elif self.task_type == KS:
-            input_text += f"{document}\nKey Sentence: {key_sentence}"
-            label_text += summary
+            input_text += document
+            label_text += f"Key Sentence: {key_sentence}\nSummary: {summary}"
 
         elif self.task_type == KWKS:
-            input_text += f"{document}\nKey Words: {key_words}\nKey Sentence: {key_sentence}"
-            label_text += summary
+            input_text += document
+            label_text += f"Key Words: {key_words}\nKey Sentence: {key_sentence}\nSummary: {summary}"
 
 
         encoded_input = self.tokenizer(
