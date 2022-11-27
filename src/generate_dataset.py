@@ -4,6 +4,7 @@ from datasets import load_dataset
 import evaluate 
 import sys
 import numpy as np
+import random
 sys.path.append("utils/")
 from util import split_into_sentences
 import torch
@@ -15,36 +16,31 @@ import argparse
 parser = argparse.ArgumentParser()
 
 parser.add_argument("--split", type=str)
-parser.add_argument("--train_split_idx", type=int)
-parser.add_argument("--train_split_num", type=int)
+
 
 args = parser.parse_args()
 
 split = args.split
-train_split_idx = args.train_split_idx
-train_split_num = args.train_split_num
 
 
+random.seed(42)
 
 dataset = load_dataset("cnn_dailymail", '3.0.0')
 rouge = evaluate.load("rouge")
 cnn_dataset = dataset[split]
 print(len(cnn_dataset))
 if split == "train":
-    len_train = len(cnn_dataset)
-    split_len = int(len_train/train_split_num)
-    print(split_len)
-    if train_split_idx == train_split_num-1:
-        cnn_dataset = list(cnn_dataset)[train_split_idx*split_len:]
-    else:
-        cnn_dataset = list(cnn_dataset)[train_split_idx*split_len: (train_split_idx+1)*split_len]
+    cnn_dataset = random.sample(list(cnn_dataset),4000)
+else:
+    cnn_dataset = random.sample(list(cnn_dataset),500)
+    
 tokenizer = AutoTokenizer.from_pretrained("bloomberg/KeyBART")
 print(len(cnn_dataset))
 model = AutoModelForSeq2SeqLM.from_pretrained("bloomberg/KeyBART")
 model.eval()
 device = "cuda:0"
 model.to(device)
-batch_size = 32
+batch_size = 16
 
 
 collector = []
@@ -56,16 +52,14 @@ for batch in tqdm(cur_dataloader):
     with torch.no_grad():
         output_ids = model.generate(
         input_ids=input_ids,
-        do_sample=True,  # 샘플링 전략 사용
-        max_length=30,  # 최대 디코딩 길이는 30
-        top_k=50,  # 확률 순위가 50위 밖인 토큰은 샘플링에서 제외
-        top_p=0.95  # 누적 확률이 95%인 후보집합에서만 생성
+        max_length=40,  
+        num_beams=10
     ).cpu().detach()
     decoded_seqs = tokenizer.batch_decode(output_ids, skip_special_tokens=True)
     key_words = [seq.strip(";").split(";") for seq in decoded_seqs] 
     key_words_collector += key_words
 
-for d_idx, data in tqdm(enumerate(cnn_dataset)):
+for d_idx, data in enumerate(tqdm(cnn_dataset)):
     # load document and summary sentence
     doc = data['article']
     summary_sentence = data['highlights']
@@ -87,9 +81,6 @@ for d_idx, data in tqdm(enumerate(cnn_dataset)):
         "key_sentence": key_sentence
     })
     
-if split == "train":
-    with open(f"data/{split}_{train_split_idx}.json", "w") as f:
-        json.dump(collector, f, indent=4)
-else:
-     with open(f"data/{split}.json", "w") as f:
-        json.dump(collector, f, indent=4)
+
+with open(f"data/{split}.json", "w") as f:
+    json.dump(collector, f, indent=4)
