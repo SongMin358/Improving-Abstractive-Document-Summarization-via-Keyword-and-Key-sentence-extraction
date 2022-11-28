@@ -1,7 +1,7 @@
 import sys
 sys.path.append("data")
 sys.path.append("utils")
-from utils import *
+from util import *
 from dataset import SummaryDataset
 from transformers import AutoTokenizer, AutoModel
 from transformers import AutoConfig, AutoModelForSeq2SeqLM, AutoModelForCausalLM
@@ -71,8 +71,9 @@ finetune_args = Seq2SeqTrainingArguments(
     evaluation_strategy='steps',
     logging_strategy="steps",
     save_strategy="steps",
-    eval_steps=50,
+    eval_steps=30,
     logging_steps=10,
+    save_steps=30,
     per_device_train_batch_size=args.train_batch_size,
     per_device_eval_batch_size=args.val_batch_size,
     learning_rate=args.init_lr,
@@ -87,26 +88,25 @@ finetune_args = Seq2SeqTrainingArguments(
     # warmup_ratio= ,
     warmup_steps=args.warm_up,
     save_total_limit=1,
-    fp16=True,
+    fp16=False,
     seed=516,
     logging_first_step=True,
     load_best_model_at_end=True,
     predict_with_generate=True,
     prediction_loss_only=False,
-    generation_max_length=100,
+    generation_max_length=200,
     generation_num_beams=5,
     metric_for_best_model='loss',
     greater_is_better=True,
     report_to='wandb',
-    auto_find_batch_size=True,
     include_inputs_for_metrics=True,
 )
 train_dataset = SummaryDataset("train", args.task_type, tokenizer,
-                            "/home/ai/hj/Edit/data", args.encoder_max_len, args.decoder_max_len)
+                            "data", args.encoder_max_len, args.decoder_max_len)
 eval_dataset = SummaryDataset("validation", args.task_type, tokenizer,
-                           "/home/ai/hj/Edit/data", args.encoder_max_len, args.decoder_max_len)
+                           "data", args.encoder_max_len, args.decoder_max_len)
 test_dataset = SummaryDataset("test", args.task_type,  tokenizer,
-                           "/home/ai/hj/Edit/data", args.encoder_max_len, args.decoder_max_len)
+                           "data", args.encoder_max_len, args.decoder_max_len)
 
 finetune_trainer = Seq2SeqTrainer(
     model=finetune_model,
@@ -120,7 +120,7 @@ finetune_trainer = Seq2SeqTrainer(
     # preprocess_logits_for_metrics=preprocess_logits_for_metrics
 )
 if __name__ == "__main__":
-    wandb.init(project="Edit", entity="tutoring-convei")
+    wandb.init(project="summary_key", entity="tutoring-convei")
     wandb.run.name = f"{args.task_type}"
     finetune_trainer.train()
 

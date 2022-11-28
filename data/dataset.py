@@ -5,7 +5,7 @@ import json
 import os
 import sys
 sys.path.append("utils")
-from utils import *
+from util import *
 
 
 class SummaryDataset(Dataset):
@@ -41,7 +41,7 @@ class SummaryDataset(Dataset):
 
         elif self.task_type == KW:
             input_text += document
-            label_text += f"Key Words: {key_words}\nSummary: {summary}"
+            label_text += f"Key Words: {','.join(key_words)}\nSummary: {summary}"
         
         elif self.task_type == KS:
             input_text += document
@@ -49,7 +49,7 @@ class SummaryDataset(Dataset):
 
         elif self.task_type == KWKS:
             input_text += document
-            label_text += f"Key Words: {key_words}\nKey Sentence: {key_sentence}\nSummary: {summary}"
+            label_text += f"Key Words: {','.join(key_words)}\nKey Sentence: {key_sentence}\nSummary: {summary}"
 
 
         encoded_input = self.tokenizer(

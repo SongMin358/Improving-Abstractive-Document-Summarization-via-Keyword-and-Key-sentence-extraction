@@ -15,7 +15,7 @@ sys.path.append("utils")
 sys.path.append("data")
 # from ..EditEval.src.metrics.update_rouge import update_rouge
 from dataset import SummaryDataset
-from utils import *
+from util import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--checkpoint_path", type=str)
@@ -27,7 +27,7 @@ args = parser.parse_args()
 
 device = "cuda"
 finetune_weight = os.path.join(args.checkpoint_path, args.task_type)
-tokenizer = AutoTokenizer.from_pretrained(finetune_weight)
+tokenizer = AutoTokenizer.from_pretrained("facebook/bart-base")
 finetuned_model = AutoModelForSeq2SeqLM.from_pretrained(finetune_weight)
 finetuned_model.eval()
 finetuned_model.to(device)
@@ -36,8 +36,6 @@ test_dataset = SummaryDataset("test", args.task_type, tokenizer,
 test_dataloader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 rouge = evaluate.load('rouge')
 rouge_agg = evaluate.load('rouge')
-sari_agg = evaluate.load('sari')
-sari_collection = []
 collection = []
 
 
@@ -52,7 +50,7 @@ with torch.no_grad():
         response = finetuned_model.generate(
             input_ids=input_ids,
             attention_mask=attention_mask,
-            max_length=100,
+            max_length=200,
             num_beams=5
         ).cpu()
         
@@ -62,11 +60,8 @@ with torch.no_grad():
         pred = tokenizer.batch_decode(response, skip_special_tokens=True)
         rouge_score = rouge.compute(references=label, predictions=pred, use_aggregator=False)
 
-        print(63, rouge_score)
         
-        sari_score = sari_agg.compute(sources=history, predictions=pred, references=[[l] for l in label])
         # print(sari_score)
-        sari_collection.append(sari_score['sari'])
         rouge_agg.add_batch(predictions=pred, references=label)
         
         for b_i in range(len(label)):
@@ -88,7 +83,6 @@ with open(os.path.join(finetune_weight,"results_agg_temp.json"), "w") as f:
     json.dump(
         {
         "metric":{
-            "sari":float(np.mean(sari_collection)),
             "rouge": dict(rouge_agg.compute())
             },
         "prediction":collection
