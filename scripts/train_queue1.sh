@@ -1,2 +1,2 @@
-CUDA_VISIBLE_DEVICES=$1 python src/train.py --epoch=5 --best_finetune_weight_path=/data/intern/summarization_with_keyword/Summurization-via-Multi-task-Learning/checkpoint/KW/best --task_type=KW
-CUDA_VISIBLE_DEVICES=$1 python src/train.py --epoch=5 --best_finetune_weight_path=/data/intern/summarization_with_keyword/Summurization-via-Multi-task-Learning/checkpoint/KS/best --task_type=KS
+CUDA_VISIBLE_DEVICES=$1 python src/train.py --epoch=7 --best_finetune_weight_path=/data/intern/summarization_with_keyword/Summurization-via-Multi-task-Learning/checkpoint/KW/best --task_type=KW
+CUDA_VISIBLE_DEVICES=$1 python src/train.py --epoch=7 --best_finetune_weight_path=/data/intern/summarization_with_keyword/Summurization-via-Multi-task-Learning/checkpoint/KS/best --task_type=KS

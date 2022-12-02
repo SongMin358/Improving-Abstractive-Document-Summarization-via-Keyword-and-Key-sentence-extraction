@@ -50,6 +50,7 @@ with torch.no_grad():
         response = finetuned_model.generate(
             input_ids=input_ids,
             attention_mask=attention_mask,
+            force_words_ids=[[28152, 12169, 4086, 35]],
             max_length=200,
             num_beams=5
         ).cpu()
@@ -79,7 +80,7 @@ with torch.no_grad():
 print(finetune_weight)
 
 
-with open(os.path.join(finetune_weight,"results_agg_temp.json"), "w") as f:
+with open(os.path.join(finetune_weight,"results_agg_temp_new.json"), "w") as f:
     json.dump(
         {
         "metric":{
