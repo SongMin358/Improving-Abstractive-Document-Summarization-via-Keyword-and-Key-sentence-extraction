@@ -28,7 +28,7 @@ args = parser.parse_args()
 device = "cuda"
 finetune_weight = os.path.join(args.checkpoint_path, args.task_type)
 tokenizer = AutoTokenizer.from_pretrained("facebook/bart-base")
-finetuned_model = AutoModelForSeq2SeqLM.from_pretrained(finetune_weight)
+finetuned_model = AutoModelForSeq2SeqLM.from_pretrained("/data/intern/summarization_with_keyword/Summurization-via-Multi-task-Learning/checkpoint/NAIVE/checkpoint-30")
 finetuned_model.eval()
 finetuned_model.to(device)
 test_dataset = SummaryDataset("test", args.task_type, tokenizer,
